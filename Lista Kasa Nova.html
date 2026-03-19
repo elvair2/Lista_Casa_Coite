@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sobrevivência Casa Nova</title>
+    <style>
+        :root {
+            --bg-color: #f4f4f9;
+            --container-bg: #ffffff;
+            --text-main: #333;
+            --accent: #ff6b6b;
+            --accent-hover: #e05b5b;
+            --success: #4ecdc4;
+            --border: #ddd;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--accent);
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        p.subtitle {
+            text-align: center;
+            font-style: italic;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .category-card {
+            background: var(--container-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--success);
+        }
+
+        .category-title {
+            font-size: 1.4em;
+            margin-top: 0;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .item-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+            transition: all 0.2s;
+        }
+
+        .item:last-child {
+            border-bottom: none;
+        }
+
+        .item.checked .item-text {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 15px;
+            transform: scale(1.3);
+            cursor: pointer;
+            accent-color: var(--success);
+        }
+
+        .item-text {
+            flex-grow: 1;
+            font-size: 1.1em;
+            cursor: pointer;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--accent);
+            font-size: 1.2em;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+
+        .delete-btn:hover {
+            opacity: 1;
+        }
+
+        .add-form {
+            display: flex;
+            margin-top: 15px;
+            gap: 10px;
+        }
+
+        .add-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        .add-btn {
+            background-color: var(--success);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .add-btn:hover {
+            background-color: #3eb5ad;
+        }
+        
+        .reset-btn {
+            display: block;
+            margin: 30px auto;
+            background: none;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .reset-btn:hover {
+            background: var(--accent);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Operação Casa Nova 🚀</h1>
+    <p class="subtitle">Agora sim, item por item para gastar o dedo clicando.</p>
+
+    <div id="app"></div>
+    <button class="reset-btn" onclick="resetApp()">⚠️ Restaurar Lista Original</button>
+
+    <script>
+        // O banco de dados totalmente desmembrado
+        const defaultData = {
+            "Semana 1: Limpeza": [
+                { id: "101", text: "Lixeira", done: false },
+                { id: "102", text: "Vassoura", done: false },
+                { id: "103", text: "Pá de lixo", done: false },
+                { id: "104", text: "Saco de lixo", done: false },
+                { id: "105", text: "Rodo", done: false },
+                { id: "106", text: "Esfregão", done: false },
+                { id: "107", text: "Desinfetante multiuso", done: false },
+                { id: "108", text: "Água sanitária", done: false },
+                { id: "109", text: "Esponja", done: false },
+                { id: "110", text: "Detergente", done: false },
+                { id: "111", text: "Limpa vidros", done: false }
+            ],
+            "Semana 1: Banheiro": [
+                { id: "112", text: "Papel higiênico", done: false },
+                { id: "113", text: "Sabonete", done: false },
+                { id: "114", text: "Toalha de banho", done: false },
+                { id: "115", text: "Tapete de banheiro", done: false },
+                { id: "116", text: "Pasta de dentes", done: false },
+                { id: "117", text: "Escova de dentes", done: false }
+            ],
+            "Semana 1: Cozinha": [
+                { id: "118", text: "Geladeira (cinza)", done: false },
+                { id: "119", text: "Armário", done: false },
+                { id: "120", text: "Filtro de água", done: false },
+                { id: "121", text: "Cooktop indução portátil (1 boca, 20A)", done: false },
+                { id: "122", text: "Prato (mínimo 2)", done: false },
+                { id: "123", text: "Talheres (mínimo 2)", done: false },
+                { id: "124", text: "Tábua de cortar carne", done: false },
+                { id: "125", text: "Copo (mínimo 2)", done: false },
+                { id: "126", text: "Panelas específicas p/ indução", done: false },
+                { id: "127", text: "Pano de prato", done: false }
+            ],
+            "Semana 1: Quarto & Diversos": [
+                { id: "128", text: "Cama box casal (espuma D33)", done: false },
+                { id: "129", text: "Roupa de cama (lençol, travesseiro)", done: false },
+                { id: "130", text: "Cobertor leve", done: false },
+                { id: "131", text: "Ventilador", done: false },
+                { id: "132", text: "Lâmpadas plafon", done: false },
+                { id: "133", text: "Tomadas", done: false }
+            ],
+            "Semana 2: Cozinha": [
+                { id: "201", text: "Talheres completos", done: false },
+                { id: "202", text: "Jogo de pratos (4 a 6)", done: false },
+                { id: "203", text: "Jogo de copos (4 a 6)", done: false },
+                { id: "204", text: "Tábua de corte", done: false },
+                { id: "205", text: "Faca de chef", done: false },
+                { id: "206", text: "Abridor de lata/vinho", done: false },
+                { id: "207", text: "Potes herméticos", done: false },
+                { id: "208", text: "Filme plástico", done: false },
+                { id: "209", text: "Papel alumínio", done: false }
+            ],
+            "Semana 2: Banheiro & Limpeza": [
+                { id: "210", text: "Lixeira de banheiro", done: false },
+                { id: "211", text: "Escova sanitária", done: false },
+                { id: "212", text: "Porta-escova de dentes", done: false },
+                { id: "213", text: "Toalhas extras (hóspedes)", done: false },
+                { id: "214", text: "Aspirador de pó (ou esfregão)", done: false },
+                { id: "215", text: "Produtos de limpeza (vidro/chão)", done: false },
+                { id: "216", text: "Cesto de roupa suja", done: false }
+            ],
+            "Semana 2: Quarto & Organização": [
+                { id: "217", text: "Guarda-roupa", done: false },
+                { id: "218", text: "Espelho grande", done: false },
+                { id: "219", text: "Cabides", done: false },
+                { id: "220", text: "Organizadores de gaveta simples", done: false },
+                { id: "221", text: "Segundo Ventilador", done: false },
+                { id: "222", text: "Cortina bem grossa", done: false }
+            ],
+            "Mês 1: Estabilizando o Lar": [
+                { id: "301", text: "Mesa de jantar e cadeiras", done: false },
+                { id: "302", text: "Sofá retrátil (para dormir vendo filme)", done: false },
+                { id: "303", text: "Prateleiras ou estantes", done: false },
+                { id: "304", text: "Micro-ondas", done: false },
+                { id: "305", text: "Jogo de panelas completo", done: false },
+                { id: "306", text: "Chaleira elétrica", done: false },
+                { id: "307", text: "Máquina de lavar", done: false },
+                { id: "308", text: "Varal ou secadora", done: false },
+                { id: "309", text: "Prendedores de roupa", done: false },
+                { id: "310", text: "Ferro e tábua de passar", done: false },
+                { id: "311", text: "Caixa de ferramentas básica", done: false },
+                { id: "312", text: "Extintor de incêndio", done: false }
+            ],
+            "Mês 3: Renderização Final": [
+                { id: "401", text: "Cortinas/persianas para todas as janelas", done: false },
+                { id: "402", text: "Quadros, vasos e plantas", done: false },
+                { id: "403", text: "Abajures ou luminárias de chão", done: false },
+                { id: "404", text: "Televisão", done: false },
+                { id: "405", text: "Livros", done: false },
+                { id: "406", text: "Decoração (Action Figures)", done: false },
+                { id: "407", text: "Criado-mudo", done: false },
+                { id: "408", text: "Cômoda", done: false },
+                { id: "409", text: "Manta ou edredom para o inverno", done: false },
+                { id: "410", text: "Porta de correr (trilho com roldanas grandes)", done: false }
+            ],
+            "Bônus Assets (Sem pressa)": [
+                { id: "501", text: "Máquina de café de alta qualidade", done: false },
+                { id: "502", text: "Utensílios de bar (coqueteleira, taças)", done: false },
+                { id: "503", text: "Aromatizador de ambiente", done: false },
+                { id: "504", text: "Light wall", done: false },
+                { id: "505", text: "Impressora 3D", done: false },
+                { id: "506", text: "Ar condicionado", done: false },
+                { id: "507", text: "Câmeras wifi", done: false }
+            ],
+            "Briefing Eletricista": [
+                { id: "601", text: "Cozinha: Puxar fiação 4mm da pia até quadro", done: false },
+                { id: "602", text: "Cozinha: Tomada de 20A para cooktop", done: false },
+                { id: "603", text: "Geral: Trocar todos interruptores/tomadas velhos (padrão espelho R$ 10)", done: false },
+                { id: "604", text: "Teto: Retirar bocais podres", done: false },
+                { id: "605", text: "Teto: Instalar 7x Plafons de LED", done: false },
+                { id: "606", text: "Quarto: Instalar ventilador de teto", done: false },
+                { id: "607", text: "Banheiro: Colocar interruptor de sobrepor", done: false },
+                { id: "608", text: "Banheiro: Instalar plafon teto sem canaletas", done: false }
+            ]
+        };
+
+        // Carrega do LocalStorage. Se for a versão velha, a chave foi alterada para forçar reset limpo
+        let appData = JSON.parse(localStorage.getItem('casaNovaChecklistV2')) || defaultData;
+
+        function saveData() {
+            localStorage.setItem('casaNovaChecklistV2', JSON.stringify(appData));
+        }
+
+        function resetApp() {
+            if(confirm("Isso vai apagar tudo que você marcou e restaurar a lista original. Tem certeza?")) {
+                localStorage.removeItem('casaNovaChecklistV2');
+                appData = JSON.parse(JSON.stringify(defaultData));
+                saveData();
+                render();
+            }
+        }
+
+        function toggleItem(category, id) {
+            const item = appData[category].find(i => i.id === id);
+            if (item) {
+                item.done = !item.done;
+                saveData();
+                render();
+            }
+        }
+
+        function deleteItem(category, id) {
+            appData[category] = appData[category].filter(i => i.id !== id);
+            saveData();
+            render();
+        }
+
+        function addItem(category) {
+            const input = document.getElementById(`input-${category.replace(/[^a-zA-Z0-9]/g, '')}`);
+            const text = input.value.trim();
+            if (text) {
+                appData[category].push({
+                    id: Date.now().toString(),
+                    text: text,
+                    done: false
+                });
+                input.value = '';
+                saveData();
+                render();
+            }
+        }
+
+        function handleKeyPress(event, category) {
+            if (event.key === 'Enter') {
+                addItem(category);
+            }
+        }
+
+        function render() {
+            const container = document.getElementById('app');
+            container.innerHTML = '';
+
+            for (const category in appData) {
+                const card = document.createElement('div');
+                card.className = 'category-card';
+
+                const totalItems = appData[category].length;
+                const doneItems = appData[category].filter(i => i.done).length;
+                
+                // Só cria o id seguro para o input (sem espaços/caracteres especiais)
+                const safeCategoryId = category.replace(/[^a-zA-Z0-9]/g, '');
+
+                let itemsHTML = '';
+                appData[category].forEach(item => {
+                    itemsHTML += `
+                        <li class="item ${item.done ? 'checked' : ''}">
+                            <input type="checkbox" ${item.done ? 'checked' : ''} 
+                                onchange="toggleItem('${category}', '${item.id}')">
+                            <span class="item-text" onclick="toggleItem('${category}', '${item.id}')">${item.text}</span>
+                            <button class="delete-btn" onclick="deleteItem('${category}', '${item.id}')" title="Excluir">✖</button>
+                        </li>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <h2 class="category-title">
+                        ${category} 
+                        <span style="font-size: 0.7em; color: #888;">${doneItems}/${totalItems}</span>
+                    </h2>
+                    <ul class="item-list">
+                        ${itemsHTML}
+                    </ul>
+                    <div class="add-form">
+                        <input type="text" id="input-${safeCategoryId}" class="add-input" 
+                            placeholder="Adicionar novo item..." 
+                            onkeypress="handleKeyPress(event, '${category}')">
+                        <button class="add-btn" onclick="addItem('${category}')">Adicionar</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            }
+        }
+
+        render();
+    </script>
+</body>
+</html>
